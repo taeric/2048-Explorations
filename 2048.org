@@ -1,0 +1,317 @@
+#+TITLE: 2048 In Javascript
+
+I've seen a few posts going over how much more concisely you can
+implement 2048 in Haskel than you can in the likes of Javascript or
+Python.  I'm not at all sure that is an accurate statement.  Rather
+than just think that doesn't sound right, I thought I would give a
+stab at implementing 2048.
+
+So, here we go.
+
+* Our Algorithms
+
+  2048 is a game where you have a "grid" of 16 cells.  A cell either
+  has a value or is blank.  Cells that have values can be made to move
+  in any of the four main directions until they hit an occupied cell
+  or a "wall."  When a collision happens between cells of equal value,
+  they are "merged" into a cell with their combined values.
+
+  Looking at all of the cells of the grid and number them 0 to 15, we
+  can see there are very obvious sequences to define how we look at
+  moving cells.  In particular, to move up means to look at the
+  sequences $\{12, 8, 4, 0\}, \{13, 9, 5, 1\}, \{14, 10, 6, 2\}, \{15,
+  11, 7, 3\}$, whereas down is the reverse of these.  Similarly, left
+  and right have clear sequences, as well.
+
+  \begin{equation}
+    \begin{bmatrix}
+       0 & 1 & 2 & 3 \\
+       4 & 5 & 6 & 7 \\
+       8 & 9 & 10 & 11 \\
+       12 & 13 & 14 & 15
+    \end{bmatrix}
+  \end{equation}
+
+  Our task, then, is to run along these sequences looking for a
+  merge/slide candidate at a position, then to move to the next
+  position.  If we are up for the task of calculating these positions,
+  then the algorithm is complicated a little in order to have to do
+  these calculations at each step.  (That is, I'm sure you could mix
+  the logic for looking for a slide/merge and looking for the next
+  block to test.)
+
+  Instead, we'll break this up into a few main algorithms.  In fact,
+  to keep things very simple, I'll be making three main algorithms.
+  One to make a set of horizontal sequences, one to make vertical
+  sequences, and the last to run through each index checking for a
+  "merge."
+
+** Sequence Generation
+
+   We begin with the algorithm to generate the sequences.  We start
+   having been given the width ($w$), height ($h$), whether or not we
+   are doing a "left/right" sequence ($lr$), an operation to initialize
+   a collection ($INIT$), an operation which is responsible for adding
+   to a collection ($ADD$), and a an operation that will calculate the
+   current value we are adding ($CALC\_CURRENT$).  We will use
+   variables to maintain what row we are on ($r$), what column we are
+   on ($c$), the collection of all sequences ($a$), finally the current
+   sequence we are making ($s$).
+
+   The values that we will have for $CALC\_CURRENT$ will be $r \times
+   w + c$ for horizontal sequences, and $r + c \times h$ for vertical
+   ones.
+
+
+     1. [initialize] $a \gets INIT()$, $r \gets 0$
+     2. [swap w&h?] if $!lr$, swap $w$ and $h$
+     3. [begin current list] $s \gets INIT()$, $c \gets 0$
+     4. [add list to total] $ADD(a, s)$
+     5. [add next value to s] $ADD(s, CALC\_CURRENT(w, h, r, c))$
+     6. [increment c] $c \gets c + 1$, if $c < w$ goto 4.
+     7. [increment r] $r \gets r + 1$, if $r < h$ goto 2.
+     8. [terminate] $a$ contains all subsequences
+
+   Not going to lie, that actually looks and sounds more complicated
+   than the code.  I'm new and/or not good at this.  Apologies for the
+   far from idiomatic JavaScript.  Keeping it closer to how I wrote the
+   algorithm above.  And yes, even that could probably be cleaned up.
+
+   #+name: make_sequences
+   #+begin_src js
+     function makeSequences(w, h, lr, INIT, ADD, CALC_CURRENT) {
+         var c = 0, r = 0, s = null, a = INIT();
+         if (!lr)  {
+             var x = w;
+             w = h;
+             h = x;
+         }
+         for (r; r < h; r++) {
+             s = INIT();
+             ADD(a, s);
+             for (c = 0; c < w; c++) {
+                 ADD(s, CALC_CURRENT(w, h, r, c));
+             }
+         }
+         return a;
+     };
+   #+end_src
+
+   Again, not going to pretend that calling this function is the
+   cleanest thing in the world.  Especially if I was willing to code
+   golf, I could just have it such that we did not have to pass the
+   width and height to all functions.  No matter, it isn't that
+   bad. (For that matter, if I was just wanting to implement a 4x4 grid
+   for this, I would just code in the sequence and be done with it.
+   Looking forward to possibly playing with different size/shape
+   boards.)
+
+   At startup, we will initialize all four sets of our sequences such
+   that they can be looked up in a map by "up", "down", "left", and
+   "right."  As so:
+
+   #+name: init_sequences
+   #+begin_src js
+     var sequences = {
+         'left': makeSequences(width, height, true,
+                               function() { return []; },
+                               function(c, v) {c.push(v);},
+                               function(w, h, r, c) {return r * w + c;}),
+         'right': makeSequences(width, height, true,
+                                function() { return []; },
+                                function(c, v) {c.unshift(v);},
+                                function(w, h, r, c) {return r * w + c;}),
+         'up': makeSequences(width, height, false,
+                             function() { return []; },
+                             function(c, v) {c.push(v);},
+                             function(w, h, r, c) {return r + c * h;}),
+         'down': makeSequences(width, height, false,
+                               function() { return []; },
+                               function(c, v) {c.unshift(v);},
+                               function(w, h, r, c) {return r + c * h;})
+     };
+   #+end_src
+
+** Collapsing the Board
+
+   Now that we have our sequences, we need our main algorithm.  At a
+   high level, for each sequence, we basically slide two pointers
+   across it looking for either a slide, a merge, or simple advance.
+   Things are a little interesting when we do a slide, because we could
+   still merge the tile that was slid.  If we do a merge, we won't
+   consider the tile again.  Also, there is no need to look at all
+   pairs, as soon as the right focus reaches the end, we are done.
+
+   So, our overall algorithm is:
+
+     1. [initialize] $l \gets 0$
+     2. [reset r] $r \gets l$
+     3. [advance r] $r \gets r + 1$, if $r > w$ terminate
+     4. [test r] if $b[r]$ is empty goto 3
+     5. [slide?] if $b[l] is$ empty,  b[l] <- b[r], b[r] <- empty, goto 3
+     6. [merge?] if b[l] = b[r], b[l] <- b[l] + b[r]
+     7. [advance l] l = l + 1, goto 2.
+
+   In javascript, this is the rather interesting looking code below.
+   The only modification we really need is a flag to indicate that we
+   are checking for moves and not actually performing any.  That is, if
+   the game is unable to place random pieces, we need to know if the
+   user is able to make any more moves.
+
+   #+name: collapse_by_sequence
+   #+begin_src js
+     function collapseBySequence(b, s, simulate) {
+         var l = 0;
+         var r = 0;
+         for (r = 1; r < s.length; r++) {
+             if (b[s[r]] === 0) {
+                 if (simulate)
+                     return true;
+                 continue;
+             }
+             if (b[s[l]] === 0) {
+                 if (simulate)
+                     return true;
+                 b[s[l]] = b[s[r]];
+                 b[s[r]] = 0;
+                 continue;
+             }
+             if (b[s[l]] === b[s[r]]) {
+                 if (simulate)
+                     return true;
+                 b[s[l]] = b[s[l]] + b[s[r]];
+                 b[s[r]] = 0;
+             }
+             l = l + 1;
+             r = l;
+         }
+         return false;
+     }
+   #+end_src
+
+** Placing Random Values
+
+   After that, the only real "algorithmic" part I need is a way to
+   place random values.  I'm not going to claim that random values are
+   a strong point, so I'm tacking "ish" to this.  Basic idea is find
+   all indexes that have a zero and then randomly pick two.
+
+   #+name: place_random_ish
+   #+begin_src js
+     function placeRandomIsh(board, sequences) {
+         var i, c = [];
+         for (var i = 0; i < board.length; i++) {
+             if (board[i] === 0) {
+                 c.push(i);
+             }
+         }
+         if (c.length === 0) {
+             for (var d in sequences) {
+                 for (var s in sequences[d])
+                 if (collapseBySequence(board, sequences[d][s], true))
+                     return true;
+             }
+             return false;
+         } else {
+             var x = Math.floor(Math.random() * c.length);
+             board[c[x]] = 2;
+             c.splice(x, 1);
+             if (c.length) {
+                 x = Math.floor(Math.random() * c.length);
+                 board[c[x]] = 2;
+             }
+         }
+         return true;
+     }
+   #+end_src
+
+
+* Putting it together (in a console)
+
+  With all of that, we are ready to put the code together into
+  something we can run from the console.  I'm not exactly a node
+  expert.  Or well, node programmer for that matter.  Some quick
+  googling shows I really just need to set a couple of switches and to
+  import one library to get what I want.
+
+  Ultimately, this is much easier than a GUI would be, since I just
+  have to display the state of the board after each move.  If I still
+  have the energy in a couple of days, I'll modify the collapse code
+  such that I can animate merges and slides appropriately.  (This is
+  something I feel will be much easier, since at each merge/slide, I
+  know exactly which blocks are changing.  The traditional
+  "functional" styles for this make that a bit more difficult to
+  figure out.)
+
+  I did keep the "make move" and a few other pieces of code in this
+  section, since that will ultimately be different when/if I get
+  around to doing things in a browser.  At least, I suspect they will
+  be.
+
+  #+name: crummy_console
+  #+begin_src js :tangle console.js :noweb tangle
+    var sprintf=require("sprintf-js").sprintf;
+    var stdin = process.stdin;
+
+    stdin.setRawMode(true);
+    stdin.resume();
+
+    function Game(width, height) {
+
+        <<make_sequences>>
+        <<init_sequences>>
+        <<collapse_by_sequence>>
+        <<place_random_ish>>
+        var board = [];
+        for (var i = 0; i < (width * height); i++) {
+            board.push(0);
+        }
+        function showBoard() {
+            var line = "";
+            for (var i = 0; i < board.length; i++) {
+                if (i % width === 0) {
+                    console.log(line);
+                    line = "";
+                }
+                line += sprintf("%5d", board[i]);
+            }
+            console.log(line);
+        }
+        this.makeMove = function(d) {
+            for (var s in sequences[d]) {
+                collapseBySequence(board, sequences[d][s]);
+            }
+            placeRandomIsh();
+            showBoard();
+        }
+        if (!placeRandomIsh(board, sequences))
+            console.log("Game Over");
+        showBoard();
+    }
+    var game = new Game(10,10);
+
+    stdin.on('data', function (key) {
+        if (key == '\u0003') process.exit();
+        if (key == 'w') game.makeMove("up");
+        if (key == 'a') game.makeMove("left");
+        if (key == 's') game.makeMove("down");
+        if (key == 'd') game.makeMove("right");
+    });
+
+  #+end_src
+
+* Conclusions
+
+  I hasten to add a note saying I don't think you can really draw any
+  conclusions on the verbosity of javascript here.  This is upwards of
+  130 lines of code.  Though, about 30 of that is because I did not
+  just hard code the sequences.
+
+  It isn't like that would be a necessarily fair comparison, either.
+  Without the document that the code is tangled from (this one), I can
+  make no pretense that the code is obvious.  I do not feel it is
+  completely unapproachable, but not obvious.
+
+  I do believe this code is a lot easier to reason about when it comes
+  to performance characteristics.  Though, I can't imagine that is a
+  concern for this game.  :)
