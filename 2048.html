@@ -1,0 +1,605 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>2048 In Javascript</title>
+<!-- 2014-06-22 Sun 14:49 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Josh" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+<script type="text/javascript" src="http://orgmode.org/mathjax/MathJax.js"></script>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+    MathJax.Hub.Config({
+        // Only one of the two following lines, depending on user settings
+        // First allows browser-native MathML display, second forces HTML/CSS
+        //  config: ["MMLorHTML.js"], jax: ["input/TeX"],
+            jax: ["input/TeX", "output/HTML-CSS"],
+        extensions: ["tex2jax.js","TeX/AMSmath.js","TeX/AMSsymbols.js",
+                     "TeX/noUndefined.js"],
+        tex2jax: {
+            inlineMath: [ ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"], ["\\begin{displaymath}","\\end{displaymath}"] ],
+            skipTags: ["script","noscript","style","textarea","pre","code"],
+            ignoreClass: "tex2jax_ignore",
+            processEscapes: false,
+            processEnvironments: true,
+            preview: "TeX"
+        },
+        showProcessingMessages: true,
+        displayAlign: "center",
+        displayIndent: "2em",
+
+        "HTML-CSS": {
+             scale: 100,
+             availableFonts: ["STIX","TeX"],
+             preferredFont: "TeX",
+             webFont: "TeX",
+             imageFont: "TeX",
+             showMathMenu: true,
+        },
+        MMLorHTML: {
+             prefer: {
+                 MSIE:    "MML",
+                 Firefox: "MML",
+                 Opera:   "HTML",
+                 other:   "HTML"
+             }
+        }
+    });
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">2048 In Javascript</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Our Algorithms</a>
+<ul>
+<li><a href="#sec-1-1">1.1. Sequence Generation</a></li>
+<li><a href="#sec-1-2">1.2. Collapsing the Board</a></li>
+<li><a href="#sec-1-3">1.3. Placing Random Values</a></li>
+</ul>
+</li>
+<li><a href="#sec-2">2. Putting it together (in a console)</a></li>
+<li><a href="#sec-3">3. Conclusions</a></li>
+</ul>
+</div>
+</div>
+<p>
+I've seen a few posts going over how much more concisely you can
+implement 2048 in Haskel than you can in the likes of Javascript or
+Python.  I'm not at all sure that is an accurate statement.  Rather
+than just think that doesn't sound right, I thought I would give a
+stab at implementing 2048.
+</p>
+
+<p>
+So, here we go.
+</p>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Our Algorithms</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+2048 is a game where you have a "grid" of 16 cells.  A cell either
+has a value or is blank.  Cells that have values can be made to move
+in any of the four main directions until they hit an occupied cell
+or a "wall."  When a collision happens between cells of equal value,
+they are "merged" into a cell with their combined values.
+</p>
+
+<p>
+Looking at all of the cells of the grid and number them 0 to 15, we
+can see there are very obvious sequences to define how we look at
+moving cells.  In particular, to move up means to look at the
+sequences \(\{12, 8, 4, 0\}, \{13, 9, 5, 1\}, \{14, 10, 6, 2\}, \{15,
+  11, 7, 3\}\), whereas down is the reverse of these.  Similarly, left
+and right have clear sequences, as well.
+</p>
+
+\begin{equation}
+  \begin{bmatrix}
+     0 & 1 & 2 & 3 \\
+     4 & 5 & 6 & 7 \\
+     8 & 9 & 10 & 11 \\
+     12 & 13 & 14 & 15
+  \end{bmatrix}
+\end{equation}
+
+<p>
+Our task, then, is to run along these sequences looking for a
+merge/slide candidate at a position, then to move to the next
+position.  If we are up for the task of calculating these positions,
+then the algorithm is complicated a little in order to have to do
+these calculations at each step.  (That is, I'm sure you could mix
+the logic for looking for a slide/merge and looking for the next
+block to test.)
+</p>
+
+<p>
+Instead, we'll break this up into a few main algorithms.  In fact,
+to keep things very simple, I'll be making three main algorithms.
+One to make a set of horizontal sequences, one to make vertical
+sequences, and the last to run through each index checking for a
+"merge."
+</p>
+</div>
+
+<div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Sequence Generation</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+We begin with the algorithm to generate the sequences.  We start
+having been given the width (\(w\)), height (\(h\)), whether or not we
+are doing a "left/right" sequence (\(lr\)), an operation to initialize
+a collection (\(INIT\)), an operation which is responsible for adding
+to a collection (\(ADD\)), and a an operation that will calculate the
+current value we are adding (\(CALC\_CURRENT\)).  We will use
+variables to maintain what row we are on (\(r\)), what column we are
+on (\(c\)), the collection of all sequences (\(a\)), finally the current
+sequence we are making (\(s\)).
+</p>
+
+<p>
+The values that we will have for \(CALC\_CURRENT\) will be \(r \times
+   w + c\) for horizontal sequences, and \(r + c \times h\) for vertical
+ones.
+</p>
+
+
+<ol class="org-ol">
+<li>[initialize] \(a \gets INIT()\), \(r \gets 0\)
+</li>
+<li>[swap w&amp;h?] if \(!lr\), swap \(w\) and \(h\)
+</li>
+<li>[begin current list] \(s \gets INIT()\), \(c \gets 0\)
+</li>
+<li>[add list to total] \(ADD(a, s)\)
+</li>
+<li>[add next value to s] \(ADD(s, CALC\_CURRENT(w, h, r, c))\)
+</li>
+<li>[increment c] \(c \gets c + 1\), if \(c < w\) goto 4.
+</li>
+<li>[increment r] \(r \gets r + 1\), if \(r < h\) goto 2.
+</li>
+<li>[terminate] \(a\) contains all subsequences
+</li>
+</ol>
+
+<p>
+Not going to lie, that actually looks and sounds more complicated
+than the code.  I'm new and/or not good at this.  Apologies for the
+far from idiomatic JavaScript.  Keeping it closer to how I wrote the
+algorithm above.  And yes, even that could probably be cleaned up.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-js" id="make_sequences"><span style="color: #F0DFAF; font-weight: bold;">function</span> <span style="color: #93E0E3;">makeSequences</span>(<span style="color: #DFAF8F;">w</span>, <span style="color: #DFAF8F;">h</span>, <span style="color: #DFAF8F;">lr</span>, <span style="color: #DFAF8F;">INIT</span>, <span style="color: #DFAF8F;">ADD</span>, <span style="color: #DFAF8F;">CALC_CURRENT</span>) {
+    <span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">c</span> = 0, <span style="color: #DFAF8F;">r</span> = 0, <span style="color: #DFAF8F;">s</span> = <span style="color: #BFEBBF;">null</span>, <span style="color: #DFAF8F;">a</span> = INIT();
+    <span style="color: #F0DFAF; font-weight: bold;">if</span> (!lr)  {
+        <span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">x</span> = w;
+        w = h;
+        h = x;
+    }
+    <span style="color: #F0DFAF; font-weight: bold;">for</span> (r; r &lt; h; r++) {
+        s = INIT();
+        ADD(a, s);
+        <span style="color: #F0DFAF; font-weight: bold;">for</span> (c = 0; c &lt; w; c++) {
+            ADD(s, CALC_CURRENT(w, h, r, c));
+        }
+    }
+    <span style="color: #F0DFAF; font-weight: bold;">return</span> a;
+};
+</pre>
+</div>
+
+<p>
+Again, not going to pretend that calling this function is the
+cleanest thing in the world.  Especially if I was willing to code
+golf, I could just have it such that we did not have to pass the
+width and height to all functions.  No matter, it isn't that
+bad. (For that matter, if I was just wanting to implement a 4x4 grid
+for this, I would just code in the sequence and be done with it.
+Looking forward to possibly playing with different size/shape
+boards.)
+</p>
+
+<p>
+At startup, we will initialize all four sets of our sequences such
+that they can be looked up in a map by "up", "down", "left", and
+"right."  As so:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-js" id="init_sequences"><span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">sequences</span> = {
+    <span style="color: #CC9393;">'left'</span>: makeSequences(width, height, <span style="color: #BFEBBF;">true</span>,
+                          <span style="color: #F0DFAF; font-weight: bold;">function</span>() { <span style="color: #F0DFAF; font-weight: bold;">return</span> []; },
+                          <span style="color: #F0DFAF; font-weight: bold;">function</span>(<span style="color: #DFAF8F;">c</span>, <span style="color: #DFAF8F;">v</span>) {c.push(v);},
+                          <span style="color: #F0DFAF; font-weight: bold;">function</span>(<span style="color: #DFAF8F;">w</span>, <span style="color: #DFAF8F;">h</span>, <span style="color: #DFAF8F;">r</span>, <span style="color: #DFAF8F;">c</span>) {<span style="color: #F0DFAF; font-weight: bold;">return</span> r * w + c;}),
+    <span style="color: #CC9393;">'right'</span>: makeSequences(width, height, <span style="color: #BFEBBF;">true</span>,
+                           <span style="color: #F0DFAF; font-weight: bold;">function</span>() { <span style="color: #F0DFAF; font-weight: bold;">return</span> []; },
+                           <span style="color: #F0DFAF; font-weight: bold;">function</span>(<span style="color: #DFAF8F;">c</span>, <span style="color: #DFAF8F;">v</span>) {c.unshift(v);},
+                           <span style="color: #F0DFAF; font-weight: bold;">function</span>(<span style="color: #DFAF8F;">w</span>, <span style="color: #DFAF8F;">h</span>, <span style="color: #DFAF8F;">r</span>, <span style="color: #DFAF8F;">c</span>) {<span style="color: #F0DFAF; font-weight: bold;">return</span> r * w + c;}),
+    <span style="color: #CC9393;">'up'</span>: makeSequences(width, height, <span style="color: #BFEBBF;">false</span>,
+                        <span style="color: #F0DFAF; font-weight: bold;">function</span>() { <span style="color: #F0DFAF; font-weight: bold;">return</span> []; },
+                        <span style="color: #F0DFAF; font-weight: bold;">function</span>(<span style="color: #DFAF8F;">c</span>, <span style="color: #DFAF8F;">v</span>) {c.push(v);},
+                        <span style="color: #F0DFAF; font-weight: bold;">function</span>(<span style="color: #DFAF8F;">w</span>, <span style="color: #DFAF8F;">h</span>, <span style="color: #DFAF8F;">r</span>, <span style="color: #DFAF8F;">c</span>) {<span style="color: #F0DFAF; font-weight: bold;">return</span> r + c * h;}),
+    <span style="color: #CC9393;">'down'</span>: makeSequences(width, height, <span style="color: #BFEBBF;">false</span>,
+                          <span style="color: #F0DFAF; font-weight: bold;">function</span>() { <span style="color: #F0DFAF; font-weight: bold;">return</span> []; },
+                          <span style="color: #F0DFAF; font-weight: bold;">function</span>(<span style="color: #DFAF8F;">c</span>, <span style="color: #DFAF8F;">v</span>) {c.unshift(v);},
+                          <span style="color: #F0DFAF; font-weight: bold;">function</span>(<span style="color: #DFAF8F;">w</span>, <span style="color: #DFAF8F;">h</span>, <span style="color: #DFAF8F;">r</span>, <span style="color: #DFAF8F;">c</span>) {<span style="color: #F0DFAF; font-weight: bold;">return</span> r + c * h;})
+};
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Collapsing the Board</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Now that we have our sequences, we need our main algorithm.  At a
+high level, for each sequence, we basically slide two pointers
+across it looking for either a slide, a merge, or simple advance.
+Things are a little interesting when we do a slide, because we could
+still merge the tile that was slid.  If we do a merge, we won't
+consider the tile again.  Also, there is no need to look at all
+pairs, as soon as the right focus reaches the end, we are done.
+</p>
+
+<p>
+So, our overall algorithm is:
+</p>
+
+<ol class="org-ol">
+<li>[initialize] \(l \gets 0\)
+</li>
+<li>[reset r] \(r \gets l\)
+</li>
+<li>[advance r] \(r \gets r + 1\), if \(r > w\) terminate
+</li>
+<li>[test r] if \(b[r]\) is empty goto 3
+</li>
+<li>[slide?] if \(b[l] is\) empty,  b[l] &lt;- b[r], b[r] &lt;- empty, goto 3
+</li>
+<li>[merge?] if b[l] = b[r], b[l] &lt;- b[l] + b[r]
+</li>
+<li>[advance l] l = l + 1, goto 2.
+</li>
+</ol>
+
+<p>
+In javascript, this is the rather interesting looking code below.
+The only modification we really need is a flag to indicate that we
+are checking for moves and not actually performing any.  That is, if
+the game is unable to place random pieces, we need to know if the
+user is able to make any more moves.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-js" id="collapse_by_sequence"><span style="color: #F0DFAF; font-weight: bold;">function</span> <span style="color: #93E0E3;">collapseBySequence</span>(<span style="color: #DFAF8F;">b</span>, <span style="color: #DFAF8F;">s</span>, <span style="color: #DFAF8F;">simulate</span>) {
+    <span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">l</span> = 0;
+    <span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">r</span> = 0;
+    <span style="color: #F0DFAF; font-weight: bold;">for</span> (r = 1; r &lt; s.length; r++) {
+        <span style="color: #F0DFAF; font-weight: bold;">if</span> (b[s[r]] === 0) {
+            <span style="color: #F0DFAF; font-weight: bold;">if</span> (simulate)
+                <span style="color: #F0DFAF; font-weight: bold;">return</span> <span style="color: #BFEBBF;">true</span>;
+            <span style="color: #F0DFAF; font-weight: bold;">continue</span>;
+        }
+        <span style="color: #F0DFAF; font-weight: bold;">if</span> (b[s[l]] === 0) {
+            <span style="color: #F0DFAF; font-weight: bold;">if</span> (simulate)
+                <span style="color: #F0DFAF; font-weight: bold;">return</span> <span style="color: #BFEBBF;">true</span>;
+            b[s[l]] = b[s[r]];
+            b[s[r]] = 0;
+            <span style="color: #F0DFAF; font-weight: bold;">continue</span>;
+        }
+        <span style="color: #F0DFAF; font-weight: bold;">if</span> (b[s[l]] === b[s[r]]) {
+            <span style="color: #F0DFAF; font-weight: bold;">if</span> (simulate)
+                <span style="color: #F0DFAF; font-weight: bold;">return</span> <span style="color: #BFEBBF;">true</span>;
+            b[s[l]] = b[s[l]] + b[s[r]];
+            b[s[r]] = 0;
+        }
+        l = l + 1;
+        r = l;
+    }
+    <span style="color: #F0DFAF; font-weight: bold;">return</span> <span style="color: #BFEBBF;">false</span>;
+}
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> Placing Random Values</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+After that, the only real "algorithmic" part I need is a way to
+place random values.  I'm not going to claim that random values are
+a strong point, so I'm tacking "ish" to this.  Basic idea is find
+all indexes that have a zero and then randomly pick two.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-js" id="place_random_ish"><span style="color: #F0DFAF; font-weight: bold;">function</span> <span style="color: #93E0E3;">placeRandomIsh</span>(<span style="color: #DFAF8F;">board</span>, <span style="color: #DFAF8F;">sequences</span>) {
+    <span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">i</span>, <span style="color: #DFAF8F;">c</span> = [];
+    <span style="color: #F0DFAF; font-weight: bold;">for</span> (<span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">i</span> = 0; i &lt; board.length; i++) {
+        <span style="color: #F0DFAF; font-weight: bold;">if</span> (board[i] === 0) {
+            c.push(i);
+        }
+    }
+    <span style="color: #F0DFAF; font-weight: bold;">if</span> (c.length === 0) {
+        <span style="color: #F0DFAF; font-weight: bold;">for</span> (<span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">d</span> <span style="color: #F0DFAF; font-weight: bold;">in</span> sequences) {
+            <span style="color: #F0DFAF; font-weight: bold;">for</span> (<span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">s</span> <span style="color: #F0DFAF; font-weight: bold;">in</span> sequences[d])
+            <span style="color: #F0DFAF; font-weight: bold;">if</span> (collapseBySequence(board, sequences[d][s], <span style="color: #BFEBBF;">true</span>))
+                <span style="color: #F0DFAF; font-weight: bold;">return</span> <span style="color: #BFEBBF;">true</span>;
+        }
+        <span style="color: #F0DFAF; font-weight: bold;">return</span> <span style="color: #BFEBBF;">false</span>;
+    } <span style="color: #F0DFAF; font-weight: bold;">else</span> {
+        <span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">x</span> = Math.floor(Math.random() * c.length);
+        board[c[x]] = 2;
+        c.splice(x, 1);
+        <span style="color: #F0DFAF; font-weight: bold;">if</span> (c.length) {
+            x = Math.floor(Math.random() * c.length);
+            board[c[x]] = 2;
+        }
+    }
+    <span style="color: #F0DFAF; font-weight: bold;">return</span> <span style="color: #BFEBBF;">true</span>;
+}
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Putting it together (in a console)</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+With all of that, we are ready to put the code together into
+something we can run from the console.  I'm not exactly a node
+expert.  Or well, node programmer for that matter.  Some quick
+googling shows I really just need to set a couple of switches and to
+import one library to get what I want.
+</p>
+
+<p>
+Ultimately, this is much easier than a GUI would be, since I just
+have to display the state of the board after each move.  If I still
+have the energy in a couple of days, I'll modify the collapse code
+such that I can animate merges and slides appropriately.  (This is
+something I feel will be much easier, since at each merge/slide, I
+know exactly which blocks are changing.  The traditional
+"functional" styles for this make that a bit more difficult to
+figure out.)
+</p>
+
+<p>
+I did keep the "make move" and a few other pieces of code in this
+section, since that will ultimately be different when/if I get
+around to doing things in a browser.  At least, I suspect they will
+be.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-js" id="crummy_console"><span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">sprintf</span>=require(<span style="color: #CC9393;">"sprintf-js"</span>).sprintf;
+<span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">stdin</span> = process.stdin;
+
+stdin.setRawMode(<span style="color: #BFEBBF;">true</span>);
+stdin.resume();
+
+<span style="color: #F0DFAF; font-weight: bold;">function</span> <span style="color: #93E0E3;">Game</span>(<span style="color: #DFAF8F;">width</span>, <span style="color: #DFAF8F;">height</span>) {
+
+    &lt;&lt;make_sequences&gt;&gt;
+    &lt;&lt;init_sequences&gt;&gt;
+    &lt;&lt;collapse_by_sequence&gt;&gt;
+    &lt;&lt;place_random_ish&gt;&gt;
+    <span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">board</span> = [];
+    <span style="color: #F0DFAF; font-weight: bold;">for</span> (<span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">i</span> = 0; i &lt; (width * height); i++) {
+        board.push(0);
+    }
+    <span style="color: #F0DFAF; font-weight: bold;">function</span> <span style="color: #93E0E3;">showBoard</span>() {
+        <span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">line</span> = <span style="color: #CC9393;">""</span>;
+        <span style="color: #F0DFAF; font-weight: bold;">for</span> (<span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">i</span> = 0; i &lt; board.length; i++) {
+            <span style="color: #F0DFAF; font-weight: bold;">if</span> (i % width === 0) {
+                console.log(line);
+                line = <span style="color: #CC9393;">""</span>;
+            }
+            line += sprintf(<span style="color: #CC9393;">"%5d"</span>, board[i]);
+        }
+        console.log(line);
+    }
+    <span style="color: #BFEBBF;">this</span>.makeMove = <span style="color: #F0DFAF; font-weight: bold;">function</span>(<span style="color: #DFAF8F;">d</span>) {
+        <span style="color: #F0DFAF; font-weight: bold;">for</span> (<span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">s</span> <span style="color: #F0DFAF; font-weight: bold;">in</span> sequences[d]) {
+            collapseBySequence(board, sequences[d][s]);
+        }
+        placeRandomIsh();
+        showBoard();
+    }
+    <span style="color: #F0DFAF; font-weight: bold;">if</span> (!placeRandomIsh(board, sequences))
+        console.log(<span style="color: #CC9393;">"Game Over"</span>);
+    showBoard();
+}
+<span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">game</span> = <span style="color: #F0DFAF; font-weight: bold;">new</span> <span style="color: #7CB8BB;">Game</span>(10,10);
+
+stdin.on(<span style="color: #CC9393;">'data'</span>, <span style="color: #F0DFAF; font-weight: bold;">function</span> (<span style="color: #DFAF8F;">key</span>) {
+    <span style="color: #F0DFAF; font-weight: bold;">if</span> (key == <span style="color: #CC9393;">'\u0003'</span>) process.exit();
+    <span style="color: #F0DFAF; font-weight: bold;">if</span> (key == <span style="color: #CC9393;">'w'</span>) game.makeMove(<span style="color: #CC9393;">"up"</span>);
+    <span style="color: #F0DFAF; font-weight: bold;">if</span> (key == <span style="color: #CC9393;">'a'</span>) game.makeMove(<span style="color: #CC9393;">"left"</span>);
+    <span style="color: #F0DFAF; font-weight: bold;">if</span> (key == <span style="color: #CC9393;">'s'</span>) game.makeMove(<span style="color: #CC9393;">"down"</span>);
+    <span style="color: #F0DFAF; font-weight: bold;">if</span> (key == <span style="color: #CC9393;">'d'</span>) game.makeMove(<span style="color: #CC9393;">"right"</span>);
+});
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Conclusions</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+I hasten to add a note saying I don't think you can really draw any
+conclusions on the verbosity of javascript here.  This is upwards of
+130 lines of code.  Though, about 30 of that is because I did not
+just hard code the sequences.
+</p>
+
+<p>
+It isn't like that would be a necessarily fair comparison, either.
+Without the document that the code is tangled from (this one), I can
+make no pretense that the code is obvious.  I do not feel it is
+completely unapproachable, but not obvious.
+</p>
+
+<p>
+I do believe this code is a lot easier to reason about when it comes
+to performance characteristics.  Though, I can't imagine that is a
+concern for this game.  :)
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Josh</p>
+<p class="date">Created: 2014-06-22 Sun 14:49</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.4.50.2 (<a href="http://orgmode.org">Org</a> mode beta_8.3)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

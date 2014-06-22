@@ -11,3 +11,7 @@ tangling done, it isn't difficult to put the file together.
 
 I do not know the conventions in the node world for how to say what is
 necessary.  So, I didn't try.  :(
+
+Also, I've never actually tried "publishing" an org file.  So, for
+now, I'm just putting the raw html of the export
+[here](http://rawgit.com/taeric/2048-Explorations/master/2048.html).
