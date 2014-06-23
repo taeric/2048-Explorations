@@ -346,10 +346,16 @@ So, here we go.
   just hard code the sequences.
 
   It isn't like that would be a necessarily fair comparison, either.
-  Without the document that the code is tangled from (this one), I can
-  make no pretense that the code is obvious.  I do not feel it is
-  completely unapproachable, but not obvious.
+  For one, I'm not a good programmer.  :) For two, without the
+  document that the code is tangled from (this one), I can make no
+  pretense that the code is obvious.  I do not feel it is completely
+  unapproachable, but not obvious.
 
   I do believe this code is a lot easier to reason about when it comes
   to performance characteristics.  Though, I can't imagine that is a
-  concern for this game.  :)
+  concern for this game.
+
+  I would like to extend this code into an actual GUI someday.  That
+  will likely require reworking parts of this to support.  So, I'll
+  treat this part as a "done deal" for now.  Hopefully someone has
+  some enjoyment reading it.
