@@ -1,4 +1,4 @@
-#+TITLE: 2048 In Javascript
+#+TITLE: 2048 In Javascript, Crummy Text Edition
 
 I've seen a few posts going over how much more concisely you can
 implement 2048 in Haskel than you can in the likes of Javascript or
@@ -160,30 +160,71 @@ So, here we go.
 
    #+name: collapse_by_sequence
    #+begin_src js
-     function collapseBySequence(b, s, simulate) {
-         var l = 0;
-         var r = 0;
+     function collapseBySequence(b, s) {
+         var l = 0,
+             r = 0;
          for (r = 1; r < s.length; r++) {
              if (b[s[r]] === 0) {
-                 if (simulate)
-                     return true;
                  continue;
              }
              if (b[s[l]] === 0) {
-                 if (simulate)
-                     return true;
                  b[s[l]] = b[s[r]];
                  b[s[r]] = 0;
                  continue;
              }
              if (b[s[l]] === b[s[r]]) {
-                 if (simulate)
-                     return true;
                  b[s[l]] = b[s[l]] + b[s[r]];
                  b[s[r]] = 0;
              }
              l = l + 1;
              r = l;
+         }
+     }
+   #+end_src
+
+** Checking for moves
+
+   We do not always want to perform a collapse when inspecting the
+   game board.  In particular, when we are checking for "game over."
+   Originally, I just tacked on some extra lines in the collapse
+   method, however, that is getting rather heavy and I'd rather keep
+   things simpler.
+
+   So, we have this modification of that method to simply return
+   whether or not there are possible moves for a sequence.  As can be
+   seen, it is the same code, just without the modifications to the
+   underlying board state.
+
+   #+name: check_sequence_for_moves
+   #+begin_src js
+     function checkForMoves(b, s) {
+         var l = 0,
+             r = 0;
+         for (r = 1; r < s.length; r++) {
+             if (b[s[l]] === 0) {
+                 return true
+             }
+             if (b[s[l]] === b[s[r]]) {
+                 return true;
+             }
+             l = l + 1;
+             r = l;
+         }
+         return false;
+     }
+   #+end_src
+
+   We will also go ahead and make our method that checks for any
+   moves.  This is simply chaining the above method with all of the
+   sequences.
+
+   #+name: check_all_sequences_for_moves
+   #+begin_src js
+     function checkSequencesForMoves() {
+         for (var d in sequences) {
+             for (var s in sequences[d])
+                 if (checkForMoves(board, sequences[d][s]))
+                     return true;
          }
          return false;
      }
@@ -198,31 +239,21 @@ So, here we go.
 
    #+name: place_random_ish
    #+begin_src js
-     function placeRandomIsh(board, sequences) {
-         var i, c = [];
-         for (var i = 0; i < board.length; i++) {
-             if (board[i] === 0) {
-                 c.push(i);
-             }
-         }
-         if (c.length === 0) {
-             for (var d in sequences) {
-                 for (var s in sequences[d])
-                 if (collapseBySequence(board, sequences[d][s], true))
-                     return true;
-             }
-             return false;
-         } else {
-             var x = Math.floor(Math.random() * c.length);
-             board[c[x]] = 2;
-             c.splice(x, 1);
-             if (c.length) {
-                 x = Math.floor(Math.random() * c.length);
-                 board[c[x]] = 2;
-             }
-         }
-         return true;
-     }
+    function placeRandomIsh(board, allowedValues, sequences) {
+        var i, c = [];
+        for (var i = 0; i < board.length; i++) {
+            if (board[i] === 0) {
+                c.push(i);
+            }
+        }
+        if (c.length === 0) {
+            return checkSequencesForMoves();
+        } else {
+            var x = Math.floor(Math.random() * c.length);
+            board[c[x]] = allowedValues[Math.floor(Math.random() * allowedValues.length)];
+        }
+        return true;
+    }
    #+end_src
 
 
@@ -231,8 +262,8 @@ So, here we go.
   With all of that, we are ready to put the code together into
   something we can run from the console.  I'm not exactly a node
   expert.  Or well, node programmer for that matter.  Some quick
-  googling shows I really just need to set a couple of switches and to
-  import one library to get what I want.
+  searching shows I really just need to set a couple of switches and
+  to import one library to get what I want.
 
   Ultimately, this is much easier than a GUI would be, since I just
   have to display the state of the board after each move.  If I still
@@ -261,7 +292,10 @@ So, here we go.
         <<make_sequences>>
         <<init_sequences>>
         <<collapse_by_sequence>>
+        <<check_sequence_for_moves>>
+        <<check_all_sequences_for_moves>>
         <<place_random_ish>>
+
         var board = [];
         for (var i = 0; i < (width * height); i++) {
             board.push(0);
@@ -278,17 +312,22 @@ So, here we go.
             console.log(line);
         }
         this.makeMove = function(d) {
+            var updated = false;
             for (var s in sequences[d]) {
+                updated = updated || checkForMoves(board, sequences[d][s]);
                 collapseBySequence(board, sequences[d][s]);
             }
-            placeRandomIsh();
+            if (updated)
+                placeRandomIsh(board, [2,2,2,2,4], sequences);
+            if (!checkSequencesForMoves())
+                console.log("Game Over")
             showBoard();
         }
-        if (!placeRandomIsh(board, sequences))
-            console.log("Game Over");
+        placeRandomIsh(board, [2], sequences);
+        placeRandomIsh(board, [2], sequences);
         showBoard();
     }
-    var game = new Game(10,10);
+    var game = new Game(4,4);
 
     stdin.on('data', function (key) {
         if (key == '\u0003') process.exit();
@@ -297,7 +336,6 @@ So, here we go.
         if (key == 's') game.makeMove("down");
         if (key == 'd') game.makeMove("right");
     });
-
   #+end_src
 
 * Conclusions

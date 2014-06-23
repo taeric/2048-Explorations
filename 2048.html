@@ -3,8 +3,8 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<title>2048 In Javascript</title>
-<!-- 2014-06-22 Sun 14:49 -->
+<title>2048 In Javascript, Crummy Text Edition</title>
+<!-- 2014-06-23 Mon 16:59 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Josh" />
@@ -179,7 +179,7 @@ for the JavaScript code in this tag.
 </head>
 <body>
 <div id="content">
-<h1 class="title">2048 In Javascript</h1>
+<h1 class="title">2048 In Javascript, Crummy Text Edition</h1>
 <div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -188,7 +188,8 @@ for the JavaScript code in this tag.
 <ul>
 <li><a href="#sec-1-1">1.1. Sequence Generation</a></li>
 <li><a href="#sec-1-2">1.2. Collapsing the Board</a></li>
-<li><a href="#sec-1-3">1.3. Placing Random Values</a></li>
+<li><a href="#sec-1-3">1.3. Checking for moves</a></li>
+<li><a href="#sec-1-4">1.4. Placing Random Values</a></li>
 </ul>
 </li>
 <li><a href="#sec-2">2. Putting it together (in a console)</a></li>
@@ -411,27 +412,60 @@ user is able to make any more moves.
 
 <div class="org-src-container">
 
-<pre class="src src-js" id="collapse_by_sequence"><span style="color: #F0DFAF; font-weight: bold;">function</span> <span style="color: #93E0E3;">collapseBySequence</span>(<span style="color: #DFAF8F;">b</span>, <span style="color: #DFAF8F;">s</span>, <span style="color: #DFAF8F;">simulate</span>) {
-    <span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">l</span> = 0;
-    <span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">r</span> = 0;
+<pre class="src src-js" id="collapse_by_sequence"><span style="color: #F0DFAF; font-weight: bold;">function</span> <span style="color: #93E0E3;">collapseBySequence</span>(<span style="color: #DFAF8F;">b</span>, <span style="color: #DFAF8F;">s</span>) {
+    <span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">l</span> = 0,
+        r = 0;
     <span style="color: #F0DFAF; font-weight: bold;">for</span> (r = 1; r &lt; s.length; r++) {
         <span style="color: #F0DFAF; font-weight: bold;">if</span> (b[s[r]] === 0) {
-            <span style="color: #F0DFAF; font-weight: bold;">if</span> (simulate)
-                <span style="color: #F0DFAF; font-weight: bold;">return</span> <span style="color: #BFEBBF;">true</span>;
             <span style="color: #F0DFAF; font-weight: bold;">continue</span>;
         }
         <span style="color: #F0DFAF; font-weight: bold;">if</span> (b[s[l]] === 0) {
-            <span style="color: #F0DFAF; font-weight: bold;">if</span> (simulate)
-                <span style="color: #F0DFAF; font-weight: bold;">return</span> <span style="color: #BFEBBF;">true</span>;
             b[s[l]] = b[s[r]];
             b[s[r]] = 0;
             <span style="color: #F0DFAF; font-weight: bold;">continue</span>;
         }
         <span style="color: #F0DFAF; font-weight: bold;">if</span> (b[s[l]] === b[s[r]]) {
-            <span style="color: #F0DFAF; font-weight: bold;">if</span> (simulate)
-                <span style="color: #F0DFAF; font-weight: bold;">return</span> <span style="color: #BFEBBF;">true</span>;
             b[s[l]] = b[s[l]] + b[s[r]];
             b[s[r]] = 0;
+        }
+        l = l + 1;
+        r = l;
+    }
+}
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> Checking for moves</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+We do not always want to perform a collapse when inspecting the
+game board.  In particular, when we are checking for "game over."
+Originally, I just tacked on some extra lines in the collapse
+method, however, that is getting rather heavy and I'd rather keep
+things simpler.
+</p>
+
+<p>
+So, we have this modification of that method to simply return
+whether or not there are possible moves for a sequence.  As can be
+seen, it is the same code, just without the modifications to the
+underlying board state.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-js" id="check_sequence_for_moves"><span style="color: #F0DFAF; font-weight: bold;">function</span> <span style="color: #93E0E3;">checkForMoves</span>(<span style="color: #DFAF8F;">b</span>, <span style="color: #DFAF8F;">s</span>) {
+    <span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">l</span> = 0,
+        r = 0;
+    <span style="color: #F0DFAF; font-weight: bold;">for</span> (r = 1; r &lt; s.length; r++) {
+        <span style="color: #F0DFAF; font-weight: bold;">if</span> (b[s[l]] === 0) {
+            <span style="color: #F0DFAF; font-weight: bold;">return</span> <span style="color: #BFEBBF;">true</span>
+        }
+        <span style="color: #F0DFAF; font-weight: bold;">if</span> (b[s[l]] === b[s[r]]) {
+            <span style="color: #F0DFAF; font-weight: bold;">return</span> <span style="color: #BFEBBF;">true</span>;
         }
         l = l + 1;
         r = l;
@@ -440,12 +474,31 @@ user is able to make any more moves.
 }
 </pre>
 </div>
+
+<p>
+We will also go ahead and make our method that checks for any
+moves.  This is simply chaining the above method with all of the
+sequences.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-js" id="check_all_sequences_for_moves"><span style="color: #F0DFAF; font-weight: bold;">function</span> <span style="color: #93E0E3;">checkSequencesForMoves</span>() {
+    <span style="color: #F0DFAF; font-weight: bold;">for</span> (<span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">d</span> <span style="color: #F0DFAF; font-weight: bold;">in</span> sequences) {
+        <span style="color: #F0DFAF; font-weight: bold;">for</span> (<span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">s</span> <span style="color: #F0DFAF; font-weight: bold;">in</span> sequences[d])
+            <span style="color: #F0DFAF; font-weight: bold;">if</span> (checkForMoves(board, sequences[d][s]))
+                <span style="color: #F0DFAF; font-weight: bold;">return</span> <span style="color: #BFEBBF;">true</span>;
+    }
+    <span style="color: #F0DFAF; font-weight: bold;">return</span> <span style="color: #BFEBBF;">false</span>;
+}
+</pre>
+</div>
 </div>
 </div>
 
-<div id="outline-container-sec-1-3" class="outline-3">
-<h3 id="sec-1-3"><span class="section-number-3">1.3</span> Placing Random Values</h3>
-<div class="outline-text-3" id="text-1-3">
+<div id="outline-container-sec-1-4" class="outline-3">
+<h3 id="sec-1-4"><span class="section-number-3">1.4</span> Placing Random Values</h3>
+<div class="outline-text-3" id="text-1-4">
 <p>
 After that, the only real "algorithmic" part I need is a way to
 place random values.  I'm not going to claim that random values are
@@ -455,7 +508,7 @@ all indexes that have a zero and then randomly pick two.
 
 <div class="org-src-container">
 
-<pre class="src src-js" id="place_random_ish"><span style="color: #F0DFAF; font-weight: bold;">function</span> <span style="color: #93E0E3;">placeRandomIsh</span>(<span style="color: #DFAF8F;">board</span>, <span style="color: #DFAF8F;">sequences</span>) {
+<pre class="src src-js" id="place_random_ish"><span style="color: #F0DFAF; font-weight: bold;">function</span> <span style="color: #93E0E3;">placeRandomIsh</span>(<span style="color: #DFAF8F;">board</span>, <span style="color: #DFAF8F;">allowedValues</span>, <span style="color: #DFAF8F;">sequences</span>) {
     <span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">i</span>, <span style="color: #DFAF8F;">c</span> = [];
     <span style="color: #F0DFAF; font-weight: bold;">for</span> (<span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">i</span> = 0; i &lt; board.length; i++) {
         <span style="color: #F0DFAF; font-weight: bold;">if</span> (board[i] === 0) {
@@ -463,20 +516,10 @@ all indexes that have a zero and then randomly pick two.
         }
     }
     <span style="color: #F0DFAF; font-weight: bold;">if</span> (c.length === 0) {
-        <span style="color: #F0DFAF; font-weight: bold;">for</span> (<span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">d</span> <span style="color: #F0DFAF; font-weight: bold;">in</span> sequences) {
-            <span style="color: #F0DFAF; font-weight: bold;">for</span> (<span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">s</span> <span style="color: #F0DFAF; font-weight: bold;">in</span> sequences[d])
-            <span style="color: #F0DFAF; font-weight: bold;">if</span> (collapseBySequence(board, sequences[d][s], <span style="color: #BFEBBF;">true</span>))
-                <span style="color: #F0DFAF; font-weight: bold;">return</span> <span style="color: #BFEBBF;">true</span>;
-        }
-        <span style="color: #F0DFAF; font-weight: bold;">return</span> <span style="color: #BFEBBF;">false</span>;
+        <span style="color: #F0DFAF; font-weight: bold;">return</span> checkSequencesForMoves();
     } <span style="color: #F0DFAF; font-weight: bold;">else</span> {
         <span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">x</span> = Math.floor(Math.random() * c.length);
-        board[c[x]] = 2;
-        c.splice(x, 1);
-        <span style="color: #F0DFAF; font-weight: bold;">if</span> (c.length) {
-            x = Math.floor(Math.random() * c.length);
-            board[c[x]] = 2;
-        }
+        board[c[x]] = allowedValues[Math.floor(Math.random() * allowedValues.len<span style="color: #DC8CC3; background-color: #3F3F3F;">gth)];</span>
     }
     <span style="color: #F0DFAF; font-weight: bold;">return</span> <span style="color: #BFEBBF;">true</span>;
 }
@@ -494,8 +537,8 @@ all indexes that have a zero and then randomly pick two.
 With all of that, we are ready to put the code together into
 something we can run from the console.  I'm not exactly a node
 expert.  Or well, node programmer for that matter.  Some quick
-googling shows I really just need to set a couple of switches and to
-import one library to get what I want.
+searching shows I really just need to set a couple of switches and
+to import one library to get what I want.
 </p>
 
 <p>
@@ -529,7 +572,10 @@ stdin.resume();
     &lt;&lt;make_sequences&gt;&gt;
     &lt;&lt;init_sequences&gt;&gt;
     &lt;&lt;collapse_by_sequence&gt;&gt;
+    &lt;&lt;check_sequence_for_moves&gt;&gt;
+    &lt;&lt;check_all_sequences_for_moves&gt;&gt;
     &lt;&lt;place_random_ish&gt;&gt;
+
     <span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">board</span> = [];
     <span style="color: #F0DFAF; font-weight: bold;">for</span> (<span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">i</span> = 0; i &lt; (width * height); i++) {
         board.push(0);
@@ -546,17 +592,22 @@ stdin.resume();
         console.log(line);
     }
     <span style="color: #BFEBBF;">this</span>.makeMove = <span style="color: #F0DFAF; font-weight: bold;">function</span>(<span style="color: #DFAF8F;">d</span>) {
+        <span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">updated</span> = <span style="color: #BFEBBF;">false</span>;
         <span style="color: #F0DFAF; font-weight: bold;">for</span> (<span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">s</span> <span style="color: #F0DFAF; font-weight: bold;">in</span> sequences[d]) {
+            updated = updated || checkForMoves(board, sequences[d][s]);
             collapseBySequence(board, sequences[d][s]);
         }
-        placeRandomIsh();
+        <span style="color: #F0DFAF; font-weight: bold;">if</span> (updated)
+            placeRandomIsh(board, [2,2,2,2,4], sequences);
+        <span style="color: #F0DFAF; font-weight: bold;">if</span> (!checkSequencesForMoves())
+            console.log(<span style="color: #CC9393;">"Game Over"</span>)
         showBoard();
     }
-    <span style="color: #F0DFAF; font-weight: bold;">if</span> (!placeRandomIsh(board, sequences))
-        console.log(<span style="color: #CC9393;">"Game Over"</span>);
+    placeRandomIsh(board, [2], sequences);
+    placeRandomIsh(board, [2], sequences);
     showBoard();
 }
-<span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">game</span> = <span style="color: #F0DFAF; font-weight: bold;">new</span> <span style="color: #7CB8BB;">Game</span>(10,10);
+<span style="color: #F0DFAF; font-weight: bold;">var</span> <span style="color: #DFAF8F;">game</span> = <span style="color: #F0DFAF; font-weight: bold;">new</span> <span style="color: #7CB8BB;">Game</span>(4,4);
 
 stdin.on(<span style="color: #CC9393;">'data'</span>, <span style="color: #F0DFAF; font-weight: bold;">function</span> (<span style="color: #DFAF8F;">key</span>) {
     <span style="color: #F0DFAF; font-weight: bold;">if</span> (key == <span style="color: #CC9393;">'\u0003'</span>) process.exit();
@@ -597,8 +648,8 @@ concern for this game.  :)
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Josh</p>
-<p class="date">Created: 2014-06-22 Sun 14:49</p>
-<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.4.50.2 (<a href="http://orgmode.org">Org</a> mode beta_8.3)</p>
+<p class="date">Created: 2014-06-23 Mon 16:59</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.4.50.3 (<a href="http://orgmode.org">Org</a> mode beta_8.3)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
