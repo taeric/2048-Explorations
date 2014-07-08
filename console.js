@@ -1,3 +1,4 @@
+
 var sprintf=require("sprintf-js").sprintf;
 var stdin = process.stdin;
 
@@ -5,6 +6,7 @@ stdin.setRawMode(true);
 stdin.resume();
 
 function Game(width, height) {
+
     function makeSequences(w, h, lr, INIT, ADD, CALC_CURRENT) {
         var c = 0, r = 0, s = null, a = INIT();
         if (!lr)  {
@@ -63,8 +65,11 @@ function Game(width, height) {
         var l = 0,
             r = 0;
         for (r = 1; r < s.length; r++) {
+            if (b[s[r]] === 0) {
+                continue;
+            }
             if (b[s[l]] === 0) {
-                return true
+                return true;
             }
             if (b[s[l]] === b[s[r]]) {
                 return true;
@@ -97,6 +102,7 @@ function Game(width, height) {
         }
         return true;
     }
+
     var board = [];
     for (var i = 0; i < (width * height); i++) {
         board.push(0);

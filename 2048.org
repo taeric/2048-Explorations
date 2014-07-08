@@ -201,8 +201,11 @@ So, here we go.
          var l = 0,
              r = 0;
          for (r = 1; r < s.length; r++) {
+             if (b[s[r]] === 0) {
+                 continue;
+             }
              if (b[s[l]] === 0) {
-                 return true
+                 return true;
              }
              if (b[s[l]] === b[s[r]]) {
                  return true;
