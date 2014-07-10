@@ -283,7 +283,7 @@ So, here we go.
   be.
 
   #+name: crummy_console
-  #+begin_src js :tangle console.js :noweb tangle
+  #+begin_src js :tangle console.js :noweb tangle :comments noweb
     var sprintf=require("sprintf-js").sprintf;
     var stdin = process.stdin;
 

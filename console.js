@@ -1,4 +1,4 @@
-
+// [[file:2048.org::*Putting%20it%20together%20(in%20a%20console)][crummy_console]]
 var sprintf=require("sprintf-js").sprintf;
 var stdin = process.stdin;
 
@@ -7,6 +7,7 @@ stdin.resume();
 
 function Game(width, height) {
 
+    // [[file:~/repositories/2048/2048.org::*Sequence%20Generation][make_sequences]]
     function makeSequences(w, h, lr, INIT, ADD, CALC_CURRENT) {
         var c = 0, r = 0, s = null, a = INIT();
         if (!lr)  {
@@ -23,6 +24,8 @@ function Game(width, height) {
         }
         return a;
     };
+    // make_sequences ends here
+    // [[file:~/repositories/2048/2048.org::*Sequence%20Generation][init_sequences]]
     var sequences = {
         'left': makeSequences(width, height, true,
                               function() { return []; },
@@ -41,6 +44,8 @@ function Game(width, height) {
                               function(c, v) {c.unshift(v);},
                               function(w, h, r, c) {return r + c * h;})
     };
+    // init_sequences ends here
+    // [[file:~/repositories/2048/2048.org::*Collapsing%20the%20Board][collapse_by_sequence]]
     function collapseBySequence(b, s) {
         var l = 0,
             r = 0;
@@ -61,6 +66,8 @@ function Game(width, height) {
             r = l;
         }
     }
+    // collapse_by_sequence ends here
+    // [[file:~/repositories/2048/2048.org::*Checking%20for%20moves][check_sequence_for_moves]]
     function checkForMoves(b, s) {
         var l = 0,
             r = 0;
@@ -79,6 +86,8 @@ function Game(width, height) {
         }
         return false;
     }
+    // check_sequence_for_moves ends here
+    // [[file:~/repositories/2048/2048.org::*Checking%20for%20moves][check_all_sequences_for_moves]]
     function checkSequencesForMoves() {
         for (var d in sequences) {
             for (var s in sequences[d])
@@ -87,6 +96,8 @@ function Game(width, height) {
         }
         return false;
     }
+    // check_all_sequences_for_moves ends here
+    // [[file:~/repositories/2048/2048.org::*Placing%20Random%20Values][place_random_ish]]
     function placeRandomIsh(board, allowedValues, sequences) {
         var i, c = [];
         for (var i = 0; i < board.length; i++) {
@@ -102,6 +113,7 @@ function Game(width, height) {
         }
         return true;
     }
+    // place_random_ish ends here
 
     var board = [];
     for (var i = 0; i < (width * height); i++) {
@@ -143,3 +155,4 @@ stdin.on('data', function (key) {
     if (key == 's') game.makeMove("down");
     if (key == 'd') game.makeMove("right");
 });
+// crummy_console ends here
